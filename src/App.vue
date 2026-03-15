@@ -1,20 +1,3 @@
-<script setup>
-import { ref } from 'vue'
-import TextTagInput from './components/TextTagInput.vue'
-
-const users = [
-  { id: 1, username: 'alice', displayName: 'Alice Martin' },
-  { id: 2, username: 'bob', displayName: 'Bob Smith' },
-  { id: 3, username: 'carol', displayName: 'Carol White' },
-  { id: 4, username: 'dave', displayName: 'Dave Johnson' },
-  { id: 5, username: 'eve', displayName: 'Eve Davis' },
-  { id: 6, username: 'frank', displayName: 'Frank Leblanc' },
-  { id: 7, username: 'grace', displayName: 'Grace Hopper' },
-]
-
-const rawText = ref('')
-</script>
-
 <template>
   <div class="demo-container">
     <header class="demo-header">
@@ -42,6 +25,23 @@ const rawText = ref('')
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import TextTagInput from './components/TextTagInput.vue'
+
+const users = [
+  { id: 1, username: 'alice', displayName: 'Alice Martin' },
+  { id: 2, username: 'bob', displayName: 'Bob Smith' },
+  { id: 3, username: 'carol', displayName: 'Carol White' },
+  { id: 4, username: 'dave', displayName: 'Dave Johnson' },
+  { id: 5, username: 'eve', displayName: 'Eve Davis' },
+  { id: 6, username: 'frank', displayName: 'Frank Leblanc' },
+  { id: 7, username: 'grace', displayName: 'Grace Hopper' },
+]
+
+const rawText = ref('')
+</script>
 
 <style>
 *,

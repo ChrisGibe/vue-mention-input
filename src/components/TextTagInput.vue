@@ -1,11 +1,44 @@
-<script setup>
+<template>
+  <div class="text-tag-wrapper">
+    <div
+      ref="editorRef"
+      class="editor"
+      contenteditable="true"
+      :data-placeholder="placeholder"
+      role="textbox"
+      aria-multiline="true"
+      @input="onInput"
+      @keydown="onKeydown"
+      @paste="onPaste"
+    />
+    <MentionDropdown
+      v-if="showDropdown && suggestions.length"
+      :suggestions="suggestions"
+      :active-index="activeIndex"
+      :position="dropdownPosition"
+      @select="insertMention"
+      @close="closeDropdown"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import MentionDropdown from './MentionDropdown.vue'
 
 const props = defineProps({
-  users: { type: Array, default: () => [] },
-  placeholder: { type: String, default: 'Écrivez quelque chose… utilisez @ pour mentionner quelqu\'un' },
-  modelValue: { type: String, default: '' },
+  users: { 
+    type: Array, 
+    default: () => [] 
+  },
+  placeholder: { 
+    type: String, 
+    default: 'Écrivez quelque chose… utilisez @ pour mentionner quelqu\'un' 
+  },
+  modelValue: { 
+    type: String, 
+    default: '' 
+  },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -16,16 +49,24 @@ const dropdownPosition = ref({ top: 0, left: 0 })
 const suggestions = ref([])
 const activeIndex = ref(0)
 
+onMounted(() => {
+  document.addEventListener('mousedown', onClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('mousedown', onClickOutside)
+})
+
 // Offset of @ within its text node when a mention query is active
 let mentionStartOffset = -1
 // Reference to the text node containing the active @
-let mentionTextNode = null
+let mentionTextNode: Text | null = null
 
 // ─── Plain text extraction ────────────────────────────────────────────────────
 
-function getPlainText() {
-  function walk(node) {
-    if (node.nodeType === Node.TEXT_NODE) return node.textContent
+function getPlainText(): string {
+  function walk(node: Node): string {
+    if (node.nodeType === Node.TEXT_NODE) return node.textContent || ''
     if (node.nodeName === 'BR') return '\n'
     return Array.from(node.childNodes).map(walk).join('')
   }
@@ -41,7 +82,7 @@ function closeDropdown() {
   mentionTextNode = null
 }
 
-function positionDropdown(range) {
+function positionDropdown(range: Range) {
   const caretRect = range.getBoundingClientRect()
   const editorRect = editorRef.value.getBoundingClientRect()
   dropdownPosition.value = {
@@ -106,7 +147,7 @@ function onInput() {
 
 // ─── Insert mention ───────────────────────────────────────────────────────────
 
-function insertMention(user) {
+function insertMention(user: { id: number; username: string; displayName: string }) {
   if (!mentionTextNode) return
 
   const node = mentionTextNode
@@ -149,7 +190,7 @@ function insertMention(user) {
 
 // ─── Keyboard navigation ──────────────────────────────────────────────────────
 
-function onKeydown(e) {
+function onKeydown(e: KeyboardEvent) {
   if (!showDropdown.value) return
 
   switch (e.key) {
@@ -175,52 +216,21 @@ function onKeydown(e) {
 
 // ─── Paste: strip HTML, insert plain text ─────────────────────────────────────
 
-function onPaste(e) {
+function onPaste(e: ClipboardEvent) {
   e.preventDefault()
-  const text = e.clipboardData.getData('text/plain')
+  const text = e.clipboardData?.getData('text/plain') || ''
   document.execCommand('insertText', false, text)
 }
 
 // ─── Click outside ────────────────────────────────────────────────────────────
 
-function onClickOutside(e) {
+function onClickOutside(e: MouseEvent) {
   if (!editorRef.value?.contains(e.target)) {
     closeDropdown()
   }
 }
 
-onMounted(() => {
-  document.addEventListener('mousedown', onClickOutside)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('mousedown', onClickOutside)
-})
 </script>
-
-<template>
-  <div class="text-tag-wrapper">
-    <div
-      ref="editorRef"
-      class="editor"
-      contenteditable="true"
-      :data-placeholder="placeholder"
-      role="textbox"
-      aria-multiline="true"
-      @input="onInput"
-      @keydown="onKeydown"
-      @paste="onPaste"
-    />
-    <MentionDropdown
-      v-if="showDropdown && suggestions.length"
-      :suggestions="suggestions"
-      :active-index="activeIndex"
-      :position="dropdownPosition"
-      @select="insertMention"
-      @close="closeDropdown"
-    />
-  </div>
-</template>
 
 <style scoped>
 .text-tag-wrapper {

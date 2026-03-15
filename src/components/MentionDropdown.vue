@@ -1,25 +1,3 @@
-<script setup>
-import { ref, watch } from 'vue'
-
-const props = defineProps({
-  suggestions: { type: Array, required: true },
-  activeIndex: { type: Number, required: true },
-  position: { type: Object, required: true }, // { top, left } in px
-})
-
-const emit = defineEmits(['select', 'close'])
-
-const itemRefs = ref([])
-
-// Scroll active item into view when keyboard navigates
-watch(
-  () => props.activeIndex,
-  (i) => {
-    itemRefs.value[i]?.scrollIntoView({ block: 'nearest' })
-  }
-)
-</script>
-
 <template>
   <ul
     class="mention-dropdown"
@@ -30,7 +8,7 @@ watch(
     <li
       v-for="(user, i) in suggestions"
       :key="user.id"
-      :ref="(el) => (itemRefs[i] = el)"
+      :ref="(el) => (itemRefs[i] = el as HTMLElement | null)"
       :class="{ active: i === activeIndex }"
       role="option"
       :aria-selected="i === activeIndex"
@@ -44,6 +22,43 @@ watch(
     </li>
   </ul>
 </template>
+
+
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+
+
+interface User {
+  id: number;
+  displayName: string;
+  username: string;
+}
+
+const props = defineProps({
+  suggestions: { 
+    type: Array<User>, 
+    required: true 
+  },
+  activeIndex: { 
+    type: Number, 
+    required: true 
+  },
+  position: { 
+    type: Object, 
+    required: true 
+  },
+})
+
+const emit = defineEmits(['select', 'close'])
+  
+const itemRefs = ref<(HTMLElement | null)[]>([])
+
+// Scroll active item into view when keyboard navigates
+watch(() => props.activeIndex,(i) => {
+    itemRefs.value[i]?.scrollIntoView({ block: 'nearest' })
+  }
+)
+</script>
 
 <style scoped>
 .mention-dropdown {
